@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>Ajouter un personnage</title>
+</head>
+<body>
+<h1>Créer un personnage:</h1>
+<form th:action="@{/addPerson}"
+      th:object="${personForm}" method="POST">
+    ID:
+    <input type="number" th:field="*{id}"/>
+    Nom:
+    <input type="text" th:field="*{name}"/>
+    <br/>
+    Type personnage:
+    <input type="text" th:field="*{type}"/>
+    <br/>
+    <input type="submit" value="Create"/>
+</form>
+
+<br/>
+<div th:if="${errorMessage}" th:utext="${errorMessage}"
+     style="color:red;font-style:italic;">
+    ...
+</div>
+</body>
+</html>
