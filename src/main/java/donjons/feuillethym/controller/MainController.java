@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 @Controller
@@ -31,16 +28,17 @@ public class MainController {
     @Value("${error.message}")
     private String errorMessage;
 
+    @Value("${urlApi.person}")
+    private String urlApiPerson;
+
     @RequestMapping(value = { "/", "/index" }, method = RequestMethod.GET)
     public String index(Model model) {
-
         model.addAttribute("message", message);
-
         return "index";
     }
 
     public List<Person> getPersonsListApi() {
-        PersonList personList= restTemplate.getForObject("http://localhost:8081/Personnages",PersonList.class);
+        PersonList personList= restTemplate.getForObject(urlApiPerson,PersonList.class);
         return personList.getPersonList();
     }
 
@@ -51,7 +49,7 @@ public class MainController {
     }
     @RequestMapping(value = { "/personList/{id}" }, method = RequestMethod.GET)
     public String displayPerson(Model model, @PathVariable int id) {
-        Person person=restTemplate.getForObject("http://localhost:8081/Personnages/"+id,Person.class);
+        Person person=restTemplate.getForObject(urlApiPerson+"/"+id,Person.class);
         model.addAttribute("person", person);
         return "displayPerson";
     }
@@ -73,13 +71,43 @@ public class MainController {
         if (name != null && name.length() > 0 //
                 && type != null && type.length() > 0 && id>-1) {
             Person newPerson = new Person(id,name, type);
-            restTemplate.postForEntity("http://localhost:8081/Personnages",newPerson, ResponseEntity.class);
+            restTemplate.postForEntity(urlApiPerson,newPerson, ResponseEntity.class);
             model.addAttribute("persons",getPersonsListApi());
             return "redirect:/personList";
         }
-
         model.addAttribute("errorMessage", errorMessage);
         return "addPerson";
+    }
+
+    @RequestMapping(value = { "/updatePerson/{id}" }, method = RequestMethod.GET)
+    public String showUpdatePersonPage(Model model, @PathVariable int id) {
+        PersonForm personForm = new PersonForm();
+        personForm.setId(id);
+        model.addAttribute("personForm", personForm);
+        return "updatePerson";
+    }
+
+    @PostMapping(value = { "/updatePerson" })
+    public String updatePerson(Model model, @ModelAttribute("personForm") PersonForm personForm) {
+        int id=personForm.getId();
+        String name = personForm.getName();
+        String type = personForm.getType();
+        if (name != null && name.length() > 0 //
+                && type != null && type.length() > 0 && id>-1) {
+            Person newPerson = new Person(id,name, type);
+            restTemplate.put(urlApiPerson+"/"+id,newPerson);
+        }
+        List<Person> personList=getPersonsListApi();
+        model.addAttribute("persons", personList);
+        return "redirect:/personList";
+
+    }
+
+    @GetMapping(value = { "/deletePerson/{id}" })
+    public String deletePerson(Model model, @PathVariable int id) {
+        restTemplate.delete(urlApiPerson+"/"+id,ResponseEntity.class);
+        model.addAttribute("persons",getPersonsListApi());
+        return "redirect:/personList";
     }
 
 }
