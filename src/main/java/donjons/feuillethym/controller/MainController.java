@@ -31,7 +31,7 @@ public class MainController {
     @Value("${urlApi.person}")
     private String urlApiPerson;
 
-    @RequestMapping(value = { "/", "/index" }, method = RequestMethod.GET)
+    @GetMapping(value = { "/", "/index" })
     public String index(Model model) {
         model.addAttribute("message", message);
         return "index";
@@ -42,28 +42,27 @@ public class MainController {
         return personList.getPersonList();
     }
 
-    @RequestMapping(value = { "/personList" }, method = RequestMethod.GET)
+    @GetMapping(value = { "/personList" })
     public String personList(Model model) {
         model.addAttribute("persons",getPersonsListApi());
         return "personList";
     }
-    @RequestMapping(value = { "/personList/{id}" }, method = RequestMethod.GET)
+    @GetMapping(value = { "/personList/{id}" })
     public String displayPerson(Model model, @PathVariable int id) {
         Person person=restTemplate.getForObject(urlApiPerson+"/"+id,Person.class);
         model.addAttribute("person", person);
         return "displayPerson";
     }
 
-    @RequestMapping(value = { "/addPerson" }, method = RequestMethod.GET)
+    @GetMapping(value = { "/addPerson" })
     public String showAddPersonPage(Model model) {
         PersonForm personForm = new PersonForm();
         model.addAttribute("personForm", personForm);
         return "addPerson";
     }
 
-    @RequestMapping(value = { "/addPerson" }, method = RequestMethod.POST)
-    public String savePerson(Model model, //
-                             @ModelAttribute("personForm") PersonForm personForm) {
+    @PostMapping(value = { "/addPerson" })
+    public String savePerson(Model model, @ModelAttribute("personForm") PersonForm personForm) {
         int id=personForm.getId();
         String name = personForm.getName();
         String type = personForm.getType();
@@ -79,7 +78,7 @@ public class MainController {
         return "addPerson";
     }
 
-    @RequestMapping(value = { "/updatePerson/{id}" }, method = RequestMethod.GET)
+    @GetMapping( { "/updatePerson/{id}" })
     public String showUpdatePersonPage(Model model, @PathVariable int id) {
         PersonForm personForm = new PersonForm();
         personForm.setId(id);
